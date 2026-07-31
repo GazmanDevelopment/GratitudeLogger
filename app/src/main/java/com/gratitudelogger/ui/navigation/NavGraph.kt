@@ -5,9 +5,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.gratitudelogger.ui.auth.PinSetupScreen
+import com.gratitudelogger.ui.auth.UnlockScreen
 import com.gratitudelogger.ui.calendar.CalendarHomeScreen
 import com.gratitudelogger.ui.dayentries.DayEntriesScreen
 import com.gratitudelogger.ui.entry.AddEditEntryScreen
+import com.gratitudelogger.ui.settings.SettingsScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -19,13 +22,23 @@ data class DayEntriesRoute(val epochDay: Long)
 @Serializable
 data class AddEditEntryRoute(val entryId: Long? = null)
 
+@Serializable
+object SettingsRoute
+
+@Serializable
+object VerifyPinForChangeRoute
+
+@Serializable
+object ChangePinRoute
+
 @Composable
 fun GratitudeNavHost(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = HomeRoute) {
         composable<HomeRoute> {
             CalendarHomeScreen(
                 onDayClick = { date -> navController.navigate(DayEntriesRoute(date.toEpochDay())) },
-                onAddEntryForToday = { navController.navigate(AddEditEntryRoute()) }
+                onAddEntryForToday = { navController.navigate(AddEditEntryRoute()) },
+                onOpenSettings = { navController.navigate(SettingsRoute) }
             )
         }
         composable<DayEntriesRoute> {
@@ -41,6 +54,27 @@ fun GratitudeNavHost(navController: NavHostController = rememberNavController())
                 onDeleted = { navController.popBackStack() },
                 onCancel = { navController.popBackStack() }
             )
+        }
+        composable<SettingsRoute> {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onChangePin = { navController.navigate(VerifyPinForChangeRoute) }
+            )
+        }
+        composable<VerifyPinForChangeRoute> {
+            // Changing the PIN requires re-proving identity first, even though the user
+            // is already inside the authenticated area - otherwise anyone with the phone
+            // unlocked could silently take over the PIN.
+            UnlockScreen(
+                onUnlocked = {
+                    navController.navigate(ChangePinRoute) {
+                        popUpTo(VerifyPinForChangeRoute) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable<ChangePinRoute> {
+            PinSetupScreen(onComplete = { navController.popBackStack() })
         }
     }
 }
