@@ -17,6 +17,9 @@ class JournalRepositoryImpl @Inject constructor(
     override fun entryDatesInMonth(month: YearMonth): Flow<List<LocalDate>> =
         dao.getEntryDatesInRange(month.atDay(1), month.atEndOfMonth())
 
+    override fun entryById(id: Long): Flow<JournalEntry?> =
+        dao.getEntryById(id)
+
     override suspend fun addEntry(text: String, photoPath: String?): JournalEntry {
         val now = Instant.now()
         val entry = JournalEntry(

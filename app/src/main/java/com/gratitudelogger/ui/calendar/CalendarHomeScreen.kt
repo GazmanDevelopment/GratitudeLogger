@@ -6,10 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -21,7 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,12 +30,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.gratitudelogger.data.JournalEntry
 import com.gratitudelogger.ui.theme.EntryDot
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -47,12 +44,11 @@ import java.util.Locale
 @Composable
 fun CalendarHomeScreen(
     viewModel: CalendarHomeViewModel = hiltViewModel(),
+    onDayClick: (LocalDate) -> Unit = {},
     onAddEntryForToday: () -> Unit = {}
 ) {
     val visibleMonth by viewModel.visibleMonth.collectAsStateWithLifecycle()
     val entryDates by viewModel.entryDates.collectAsStateWithLifecycle()
-    val selectedDate by viewModel.selectedDate.collectAsStateWithLifecycle()
-    val selectedDateEntries by viewModel.selectedDateEntries.collectAsStateWithLifecycle()
 
     Scaffold(
         floatingActionButton = {
@@ -76,13 +72,7 @@ fun CalendarHomeScreen(
             MonthGrid(
                 visibleMonth = visibleMonth,
                 entryDates = entryDates,
-                selectedDate = selectedDate,
-                onDayClick = viewModel::selectDate
-            )
-            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-            SelectedDayEntries(
-                selectedDate = selectedDate,
-                entries = selectedDateEntries
+                onDayClick = onDayClick
             )
         }
     }
@@ -122,7 +112,7 @@ private val weekdayLabels = listOf(
 
 @Composable
 private fun WeekdayHeader() {
-    androidx.compose.foundation.layout.Row(modifier = Modifier.fillMaxWidth()) {
+    Row(modifier = Modifier.fillMaxWidth()) {
         weekdayLabels.forEach { day ->
             Text(
                 text = day.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
@@ -149,7 +139,6 @@ private fun daysGridFor(month: YearMonth): List<LocalDate?> {
 private fun MonthGrid(
     visibleMonth: YearMonth,
     entryDates: Set<LocalDate>,
-    selectedDate: LocalDate?,
     onDayClick: (LocalDate) -> Unit
 ) {
     val cells = daysGridFor(visibleMonth)
@@ -161,7 +150,6 @@ private fun MonthGrid(
             DayCell(
                 date = date,
                 hasEntry = date != null && entryDates.contains(date),
-                isSelected = date != null && date == selectedDate,
                 isToday = date != null && date == LocalDate.now(),
                 onClick = { date?.let(onDayClick) }
             )
@@ -173,7 +161,6 @@ private fun MonthGrid(
 private fun DayCell(
     date: LocalDate?,
     hasEntry: Boolean,
-    isSelected: Boolean,
     isToday: Boolean,
     onClick: () -> Unit
 ) {
@@ -181,13 +168,6 @@ private fun DayCell(
         modifier = Modifier
             .aspectRatio(1f)
             .padding(2.dp)
-            .then(
-                if (isSelected) {
-                    Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape)
-                } else {
-                    Modifier
-                }
-            )
             .clickable(enabled = date != null, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -206,37 +186,6 @@ private fun DayCell(
                         modifier = Modifier
                             .size(6.dp)
                             .background(EntryDot, CircleShape)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SelectedDayEntries(selectedDate: LocalDate?, entries: List<JournalEntry>) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        if (selectedDate == null) {
-            Text(
-                text = "Tap a day to see its entries",
-                style = MaterialTheme.typography.bodyMedium
-            )
-        } else {
-            Text(
-                text = "Entries for $selectedDate",
-                style = MaterialTheme.typography.titleSmall
-            )
-            if (entries.isEmpty()) {
-                Text(
-                    text = "No entries yet",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            } else {
-                entries.forEach { entry ->
-                    Text(
-                        text = "• ${entry.text}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 2.dp)
                     )
                 }
             }

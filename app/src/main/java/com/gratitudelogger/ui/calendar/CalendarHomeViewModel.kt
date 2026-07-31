@@ -2,8 +2,6 @@ package com.gratitudelogger.ui.calendar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.gratitudelogger.data.DummyDataSeeder
-import com.gratitudelogger.data.JournalEntry
 import com.gratitudelogger.domain.JournalRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,10 +10,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import javax.inject.Inject
@@ -23,8 +19,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CalendarHomeViewModel @Inject constructor(
-    private val repository: JournalRepository,
-    seeder: DummyDataSeeder
+    repository: JournalRepository
 ) : ViewModel() {
 
     private val _visibleMonth = MutableStateFlow(YearMonth.now())
@@ -35,17 +30,6 @@ class CalendarHomeViewModel @Inject constructor(
         .map { it.toSet() }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
-    private val _selectedDate = MutableStateFlow<LocalDate?>(null)
-    val selectedDate: StateFlow<LocalDate?> = _selectedDate.asStateFlow()
-
-    val selectedDateEntries: StateFlow<List<JournalEntry>> = _selectedDate
-        .flatMapLatest { date -> date?.let(repository::entriesForDate) ?: flowOf(emptyList()) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-
-    init {
-        viewModelScope.launch { seeder.seedIfEmpty() }
-    }
-
     fun goToPreviousMonth() {
         _visibleMonth.value = _visibleMonth.value.minusMonths(1)
     }
@@ -55,9 +39,5 @@ class CalendarHomeViewModel @Inject constructor(
         if (!next.isAfter(YearMonth.now())) {
             _visibleMonth.value = next
         }
-    }
-
-    fun selectDate(date: LocalDate) {
-        _selectedDate.value = date
     }
 }
