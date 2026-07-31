@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -34,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.gratitudelogger.data.JournalEntry
+import com.gratitudelogger.ui.theme.LocalHeaderColors
 import java.io.File
 import java.time.LocalDate
 
@@ -48,6 +50,7 @@ fun DayEntriesScreen(
     val entries by viewModel.entries.collectAsStateWithLifecycle()
     val isToday = viewModel.date == LocalDate.now()
 
+    val headerColors = LocalHeaderColors.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -56,7 +59,13 @@ fun DayEntriesScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = headerColors.container,
+                    titleContentColor = headerColors.content,
+                    navigationIconContentColor = headerColors.content,
+                    actionIconContentColor = headerColors.content
+                )
             )
         },
         floatingActionButton = {
