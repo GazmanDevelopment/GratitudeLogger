@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.gratitudelogger.ui.auth.PinSetupScreen
 import com.gratitudelogger.ui.auth.UnlockScreen
+import com.gratitudelogger.ui.backup.BackupScreen
 import com.gratitudelogger.ui.calendar.CalendarHomeScreen
 import com.gratitudelogger.ui.dayentries.DayEntriesScreen
 import com.gratitudelogger.ui.entry.AddEditEntryScreen
@@ -30,6 +31,9 @@ object VerifyPinForChangeRoute
 
 @Serializable
 object ChangePinRoute
+
+@Serializable
+object BackupRoute
 
 @Composable
 fun GratitudeNavHost(navController: NavHostController = rememberNavController()) {
@@ -58,8 +62,12 @@ fun GratitudeNavHost(navController: NavHostController = rememberNavController())
         composable<SettingsRoute> {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
-                onChangePin = { navController.navigate(VerifyPinForChangeRoute) }
+                onChangePin = { navController.navigate(VerifyPinForChangeRoute) },
+                onBackup = { navController.navigate(BackupRoute) }
             )
+        }
+        composable<BackupRoute> {
+            BackupScreen(onBack = { navController.popBackStack() })
         }
         composable<VerifyPinForChangeRoute> {
             // Changing the PIN requires re-proving identity first, even though the user

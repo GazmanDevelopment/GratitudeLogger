@@ -91,6 +91,17 @@ own.
 
 ## Status
 
-Planned, not yet implemented. See conversation history / commit log for the
-current state of the Google Drive backup feature (`domain/backup/`,
-`data/backup/`, `ui/backup/`).
+Implemented (M6). `domain/backup/BackupProvider.kt` is the provider-agnostic
+interface; `data/backup/GoogleDriveBackupProvider.kt` is the Google Drive
+implementation, reached via Settings → Backup & Restore
+(`ui/backup/BackupScreen.kt`).
+
+One deviation from the original sketch above: there's no separate "Sign in"
+step. Tapping **Back up now** or **Restore latest** triggers the Google
+account picker + `drive.appdata` consent screen the first time (via the
+Drive `AuthorizationClient`'s own resolution flow) and re-authorizes silently
+on later taps - no access token is stored between calls. The
+Credential-Manager identity step described above (for a "signed in as
+you@gmail.com" label) was dropped as unnecessary complexity for what's shown
+in the UI; the backup screen just shows a generic "Google Drive" label with
+the last-backup timestamp instead.
