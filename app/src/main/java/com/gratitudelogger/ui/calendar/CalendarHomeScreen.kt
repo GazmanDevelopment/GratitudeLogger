@@ -20,12 +20,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -41,16 +44,28 @@ import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarHomeScreen(
     viewModel: CalendarHomeViewModel = hiltViewModel(),
     onDayClick: (LocalDate) -> Unit = {},
-    onAddEntryForToday: () -> Unit = {}
+    onAddEntryForToday: () -> Unit = {},
+    onOpenSettings: () -> Unit = {}
 ) {
     val visibleMonth by viewModel.visibleMonth.collectAsStateWithLifecycle()
     val entryDates by viewModel.entryDates.collectAsStateWithLifecycle()
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Gratitude Logger") },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddEntryForToday) {
                 Icon(Icons.Default.Add, contentDescription = "Add today's entry")
