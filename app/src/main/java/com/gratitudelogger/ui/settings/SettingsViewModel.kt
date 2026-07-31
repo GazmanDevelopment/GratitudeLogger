@@ -8,6 +8,8 @@ import com.gratitudelogger.reminder.ReminderPreferences
 import com.gratitudelogger.reminder.ReminderScheduler
 import com.gratitudelogger.reminder.ReminderTime
 import com.gratitudelogger.security.SecurityPreferences
+import com.gratitudelogger.theme.AppTheme
+import com.gratitudelogger.theme.ThemePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +23,7 @@ class SettingsViewModel @Inject constructor(
     private val reminderPreferences: ReminderPreferences,
     private val reminderScheduler: ReminderScheduler,
     private val securityPreferences: SecurityPreferences,
+    private val themePreferences: ThemePreferences,
     @ApplicationContext context: Context
 ) : ViewModel() {
 
@@ -53,6 +56,13 @@ class SettingsViewModel @Inject constructor(
 
     val biometricEnabled: StateFlow<Boolean> = securityPreferences.biometricEnabled
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val selectedTheme: StateFlow<AppTheme> = themePreferences.selectedTheme
+        .stateIn(viewModelScope, SharingStarted.Eagerly, AppTheme.SUNSET_GOLD)
+
+    fun setTheme(theme: AppTheme) {
+        viewModelScope.launch { themePreferences.setTheme(theme) }
+    }
 
     fun canScheduleExactAlarms(): Boolean = reminderScheduler.canScheduleExactAlarms()
 

@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,7 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.gratitudelogger.ui.theme.EntryDot
+import com.gratitudelogger.ui.theme.LocalHeaderColors
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -55,6 +56,7 @@ fun CalendarHomeScreen(
     val visibleMonth by viewModel.visibleMonth.collectAsStateWithLifecycle()
     val entryDates by viewModel.entryDates.collectAsStateWithLifecycle()
 
+    val headerColors = LocalHeaderColors.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,7 +65,13 @@ fun CalendarHomeScreen(
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = headerColors.container,
+                    titleContentColor = headerColors.content,
+                    navigationIconContentColor = headerColors.content,
+                    actionIconContentColor = headerColors.content
+                )
             )
         },
         floatingActionButton = {
@@ -200,7 +208,7 @@ private fun DayCell(
                     Box(
                         modifier = Modifier
                             .size(6.dp)
-                            .background(EntryDot, CircleShape)
+                            .background(MaterialTheme.colorScheme.tertiary, CircleShape)
                     )
                 }
             }

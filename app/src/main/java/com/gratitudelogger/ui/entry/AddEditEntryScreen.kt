@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.gratitudelogger.ui.theme.LocalHeaderColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +61,7 @@ fun AddEditEntryScreen(
         ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? -> uri?.let(viewModel::onPhotoPicked) }
 
+    val headerColors = LocalHeaderColors.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -74,7 +77,13 @@ fun AddEditEntryScreen(
                             Icon(Icons.Default.Delete, contentDescription = "Delete entry")
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = headerColors.container,
+                    titleContentColor = headerColors.content,
+                    navigationIconContentColor = headerColors.content,
+                    actionIconContentColor = headerColors.content
+                )
             )
         }
     ) { innerPadding ->

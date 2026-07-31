@@ -8,11 +8,16 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -21,12 +26,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +47,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.gratitudelogger.theme.AppTheme
+import com.gratitudelogger.ui.theme.LocalHeaderColors
+import com.gratitudelogger.ui.theme.swatchColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +61,7 @@ fun SettingsScreen(
     val reminderEnabled by viewModel.reminderEnabled.collectAsStateWithLifecycle()
     val reminderTime by viewModel.reminderTime.collectAsStateWithLifecycle()
     val biometricEnabled by viewModel.biometricEnabled.collectAsStateWithLifecycle()
+    val selectedTheme by viewModel.selectedTheme.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -89,6 +100,7 @@ fun SettingsScreen(
         }
     }
 
+    val headerColors = LocalHeaderColors.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -97,7 +109,13 @@ fun SettingsScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = headerColors.container,
+                    titleContentColor = headerColors.content,
+                    navigationIconContentColor = headerColors.content,
+                    actionIconContentColor = headerColors.content
+                )
             )
         }
     ) { innerPadding ->
@@ -107,6 +125,34 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
+            Text(
+                "Appearance",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            AppTheme.entries.forEach { theme ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.setTheme(theme) },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = theme == selectedTheme,
+                        onClick = { viewModel.setTheme(theme) }
+                    )
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .size(24.dp)
+                            .background(theme.swatchColor(), CircleShape)
+                    )
+                    Text(theme.displayName)
+                }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
