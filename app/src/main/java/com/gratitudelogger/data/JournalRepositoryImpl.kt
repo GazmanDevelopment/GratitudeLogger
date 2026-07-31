@@ -1,6 +1,7 @@
 package com.gratitudelogger.data
 
 import com.gratitudelogger.domain.JournalRepository
+import com.gratitudelogger.domain.PhotoStorage
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 import java.time.LocalDate
@@ -8,7 +9,8 @@ import java.time.YearMonth
 import javax.inject.Inject
 
 class JournalRepositoryImpl @Inject constructor(
-    private val dao: JournalEntryDao
+    private val dao: JournalEntryDao,
+    private val photoStorage: PhotoStorage
 ) : JournalRepository {
 
     override fun entriesForDate(date: LocalDate): Flow<List<JournalEntry>> =
@@ -38,6 +40,7 @@ class JournalRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteEntry(entry: JournalEntry) {
+        entry.photoPath?.let { photoStorage.deletePhoto(it) }
         dao.delete(entry)
     }
 }
