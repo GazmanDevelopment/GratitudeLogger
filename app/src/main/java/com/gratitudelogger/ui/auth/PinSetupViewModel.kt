@@ -62,11 +62,14 @@ class PinSetupViewModel @Inject constructor(
             return
         }
         _error.value = null
-        viewModelScope.launch {
-            securityPreferences.setPin(confirmed)
-            if (isBiometricAvailable) {
-                _phase.value = PinSetupPhase.BIOMETRIC_OPT_IN
-            } else {
+        if (isBiometricAvailable) {
+            // Don't persist the PIN yet: writing it flips SecurityPreferences.isPinSet to
+            // true immediately, which would make AppRoot's top-level gate jump straight to
+            // UnlockScreen before this in-progress setup flow reaches the opt-in step below.
+            _phase.value = PinSetupPhase.BIOMETRIC_OPT_IN
+        } else {
+            viewModelScope.launch {
+                securityPreferences.setPin(confirmed)
                 onComplete()
             }
         }
@@ -78,6 +81,7 @@ class PinSetupViewModel @Inject constructor(
 
     fun onBiometricOptIn(enabled: Boolean, onComplete: () -> Unit) {
         viewModelScope.launch {
+            securityPreferences.setPin(firstPin)
             securityPreferences.setBiometricEnabled(enabled)
             onComplete()
         }

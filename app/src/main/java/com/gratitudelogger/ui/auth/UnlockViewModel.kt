@@ -33,6 +33,12 @@ class UnlockViewModel @Inject constructor(
         if (next.length == PIN_LENGTH) {
             viewModelScope.launch {
                 if (securityPreferences.verifyPin(next)) {
+                    // This ViewModel is Activity-scoped and survives stop/restart (only
+                    // onCleared on a true Activity finish), so the entered PIN must be reset
+                    // here - otherwise the next lock cycle reuses this same instance and shows
+                    // the pad already full of the previously-successful digits.
+                    _enteredPin.value = ""
+                    _error.value = null
                     onUnlocked()
                 } else {
                     _error.value = "Incorrect PIN"
