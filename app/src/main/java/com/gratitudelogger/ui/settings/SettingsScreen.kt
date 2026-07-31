@@ -56,7 +56,8 @@ import com.gratitudelogger.ui.theme.swatchColor
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
     onBack: () -> Unit,
-    onChangePin: () -> Unit
+    onChangePin: () -> Unit,
+    onBackup: () -> Unit
 ) {
     val reminderEnabled by viewModel.reminderEnabled.collectAsStateWithLifecycle()
     val reminderTime by viewModel.reminderTime.collectAsStateWithLifecycle()
@@ -202,6 +203,17 @@ fun SettingsScreen(
 
             TextButton(onClick = onChangePin) {
                 Text("Change PIN")
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+            Text(
+                "Backup",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            TextButton(onClick = onBackup) {
+                Text("Backup & Restore")
             }
         }
     }
