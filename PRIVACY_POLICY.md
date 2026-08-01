@@ -1,19 +1,15 @@
 # Privacy Policy for Gratitude Logger
 
-**Last updated:** [DATE — fill in before publishing]
+**Last updated:** 2026-08-01
 
 This policy describes what information Gratitude Logger ("the app")
 collects, how it's stored, and when it's ever shared with anyone else. It's
 written to describe exactly what the app actually does — nothing here is
 boilerplate copied from another app's policy.
 
-> **Before you publish this:** replace the bracketed placeholders below
-> (`[DATE]`, `[DEVELOPER NAME]`, `[SUPPORT EMAIL]`) with your real details.
-> Don't leave them in a published policy.
-
 ## 1. Who this policy is for
 
-Gratitude Logger is developed by [DEVELOPER NAME]. This policy applies to
+Gratitude Logger is developed by Gareth. This policy applies to
 everyone who installs and uses the app, and is provided to comply with the
 requirements of the Google Play Store and of the third-party services
 (Google Drive, Dropbox, Microsoft OneDrive) the app can optionally connect
@@ -122,4 +118,4 @@ noted here.
 ## 11. Contact
 
 Questions about this policy or how the app handles your data can be sent to
-[SUPPORT EMAIL].
+gazman.development@gmail.com.

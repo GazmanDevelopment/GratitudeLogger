@@ -1,15 +1,11 @@
 # Terms of Service for Gratitude Logger
 
-**Last updated:** [DATE — fill in before publishing]
+**Last updated:** 2026-0-01
 
 Gratitude Logger is a free personal gratitude journal app. These terms are
 short on purpose, because there isn't much to govern: there's no payment,
 no subscription, no ads, and no account with the developer. Most of what
 you need to know is the same handful of facts, said plainly.
-
-> **Before you publish this:** replace the bracketed placeholders below
-> (`[DATE]`, `[DEVELOPER NAME]`, `[SUPPORT EMAIL]`, `[REPOSITORY URL]`,
-> `[JURISDICTION]`) with your real details.
 
 ## 1. Acceptance of these terms
 
@@ -28,7 +24,7 @@ first (see [§10](#10-changes-to-these-terms)).
 
 Gratitude Logger's source code is open source, licensed under the
 **MIT License** — see the `LICENSE` file in the project repository at
-[REPOSITORY URL]. In short: anyone can read, use, modify, and redistribute
+https://github.com/GazmanDevelopment/GratitudeLogger. In short: anyone can read, use, modify, and redistribute
 the code, including for their own projects, as long as the original
 copyright notice is kept. These Terms of Service govern your use of the
 *app* itself; the `LICENSE` file separately governs what you're allowed to
@@ -108,9 +104,9 @@ commitment.
 
 ## 12. Governing law
 
-These terms are governed by the laws of [JURISDICTION], without regard to
+These terms are governed by the laws of Australia, without regard to
 its conflict-of-law principles.
 
 ## 13. Contact
 
-Questions about these terms can be sent to [SUPPORT EMAIL].
+Questions about these terms can be sent to gazman.development@gmail.com.
