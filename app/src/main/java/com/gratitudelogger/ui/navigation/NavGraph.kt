@@ -9,16 +9,12 @@ import com.gratitudelogger.ui.auth.PinSetupScreen
 import com.gratitudelogger.ui.auth.UnlockScreen
 import com.gratitudelogger.ui.backup.BackupScreen
 import com.gratitudelogger.ui.calendar.CalendarHomeScreen
-import com.gratitudelogger.ui.dayentries.DayEntriesScreen
 import com.gratitudelogger.ui.entry.AddEditEntryScreen
 import com.gratitudelogger.ui.settings.SettingsScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
 object HomeRoute
-
-@Serializable
-data class DayEntriesRoute(val epochDay: Long)
 
 @Serializable
 data class AddEditEntryRoute(val entryId: Long? = null)
@@ -40,15 +36,8 @@ fun GratitudeNavHost(navController: NavHostController = rememberNavController())
     NavHost(navController = navController, startDestination = HomeRoute) {
         composable<HomeRoute> {
             CalendarHomeScreen(
-                onDayClick = { date -> navController.navigate(DayEntriesRoute(date.toEpochDay())) },
                 onAddEntryForToday = { navController.navigate(AddEditEntryRoute()) },
-                onOpenSettings = { navController.navigate(SettingsRoute) }
-            )
-        }
-        composable<DayEntriesRoute> {
-            DayEntriesScreen(
-                onBack = { navController.popBackStack() },
-                onAddEntry = { navController.navigate(AddEditEntryRoute()) },
+                onOpenSettings = { navController.navigate(SettingsRoute) },
                 onEditEntry = { id -> navController.navigate(AddEditEntryRoute(entryId = id)) }
             )
         }

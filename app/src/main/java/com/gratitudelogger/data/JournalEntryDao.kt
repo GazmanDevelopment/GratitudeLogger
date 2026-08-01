@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
 
 @Dao
 interface JournalEntryDao {
@@ -19,11 +18,8 @@ interface JournalEntryDao {
     @Delete
     suspend fun delete(entry: JournalEntry)
 
-    @Query("SELECT * FROM journal_entries WHERE entryDate = :date ORDER BY createdAt DESC")
-    fun getEntriesForDate(date: LocalDate): Flow<List<JournalEntry>>
-
-    @Query("SELECT DISTINCT entryDate FROM journal_entries WHERE entryDate BETWEEN :start AND :end")
-    fun getEntryDatesInRange(start: LocalDate, end: LocalDate): Flow<List<LocalDate>>
+    @Query("SELECT * FROM journal_entries ORDER BY entryDate DESC, createdAt DESC")
+    fun getAllEntries(): Flow<List<JournalEntry>>
 
     @Query("SELECT * FROM journal_entries WHERE id = :id")
     fun getEntryById(id: Long): Flow<JournalEntry?>
