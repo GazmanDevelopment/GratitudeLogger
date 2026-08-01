@@ -3,14 +3,21 @@ package com.gratitudelogger.domain.backup
 import android.app.Activity
 import android.content.Intent
 import android.content.IntentSender
+import android.net.Uri
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 
 data class LastBackupInfo(val accountLabel: String, val timestamp: Instant)
 
+enum class BackupProviderType(val displayName: String) {
+    GOOGLE_DRIVE("Google Drive"),
+    DROPBOX("Dropbox")
+}
+
 sealed interface BackupOutcome {
     data object Success : BackupOutcome
     data class NeedsResolution(val intentSender: IntentSender) : BackupOutcome
+    data class NeedsBrowserAuth(val authIntent: Intent) : BackupOutcome
     data class Failed(val message: String) : BackupOutcome
 }
 
@@ -29,10 +36,18 @@ interface BackupProvider {
 
     suspend fun restoreLatest(activity: Activity): BackupOutcome
 
+    /** Resumes a flow that needed [BackupOutcome.NeedsResolution]. Not every provider uses this. */
     suspend fun resumeAfterResolution(
         activity: Activity,
         action: PendingBackupAction,
         resultCode: Int,
         data: Intent?
-    ): BackupOutcome
+    ): BackupOutcome = BackupOutcome.Failed("Not supported by this provider")
+
+    /** Resumes a flow that needed [BackupOutcome.NeedsBrowserAuth]. Not every provider uses this. */
+    suspend fun resumeAfterRedirect(
+        activity: Activity,
+        action: PendingBackupAction,
+        redirectUri: Uri
+    ): BackupOutcome = BackupOutcome.Failed("Not supported by this provider")
 }

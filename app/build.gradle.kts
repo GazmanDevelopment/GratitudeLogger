@@ -33,6 +33,11 @@ android {
             "GOOGLE_WEB_CLIENT_ID",
             "\"${localProperties.getProperty("GOOGLE_WEB_CLIENT_ID", "")}\""
         )
+        buildConfigField(
+            "String",
+            "DROPBOX_APP_KEY",
+            "\"${localProperties.getProperty("DROPBOX_APP_KEY", "")}\""
+        )
 
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
@@ -98,6 +103,7 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.okhttp)
+    implementation(libs.androidx.browser)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
