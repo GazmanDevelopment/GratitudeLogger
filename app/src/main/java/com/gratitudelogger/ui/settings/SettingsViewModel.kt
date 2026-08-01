@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.biometric.BiometricManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gratitudelogger.data.backup.BackupPreferences
 import com.gratitudelogger.reminder.ReminderPreferences
 import com.gratitudelogger.reminder.ReminderScheduler
 import com.gratitudelogger.reminder.ReminderTime
@@ -24,6 +25,7 @@ class SettingsViewModel @Inject constructor(
     private val reminderScheduler: ReminderScheduler,
     private val securityPreferences: SecurityPreferences,
     private val themePreferences: ThemePreferences,
+    private val backupPreferences: BackupPreferences,
     @ApplicationContext context: Context
 ) : ViewModel() {
 
@@ -60,6 +62,12 @@ class SettingsViewModel @Inject constructor(
     val selectedTheme: StateFlow<AppTheme> = themePreferences.selectedTheme
         .stateIn(viewModelScope, SharingStarted.Eagerly, AppTheme.SUNSET_GOLD)
 
+    val backupReminderEnabled: StateFlow<Boolean> = backupPreferences.reminderEnabled
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    val backupReminderIntervalDays: StateFlow<Int> = backupPreferences.reminderIntervalDays
+        .stateIn(viewModelScope, SharingStarted.Eagerly, BackupPreferences.DEFAULT_REMINDER_INTERVAL_DAYS)
+
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch { themePreferences.setTheme(theme) }
     }
@@ -89,5 +97,13 @@ class SettingsViewModel @Inject constructor(
 
     fun setBiometricEnabled(enabled: Boolean) {
         viewModelScope.launch { securityPreferences.setBiometricEnabled(enabled) }
+    }
+
+    fun setBackupReminderEnabled(enabled: Boolean) {
+        viewModelScope.launch { backupPreferences.setReminderEnabled(enabled) }
+    }
+
+    fun setBackupReminderIntervalDays(days: Int) {
+        viewModelScope.launch { backupPreferences.setReminderIntervalDays(days.coerceAtLeast(1)) }
     }
 }

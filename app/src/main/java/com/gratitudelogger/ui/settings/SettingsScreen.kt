@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -26,6 +28,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -43,7 +46,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,8 +68,11 @@ fun SettingsScreen(
     val reminderTime by viewModel.reminderTime.collectAsStateWithLifecycle()
     val biometricEnabled by viewModel.biometricEnabled.collectAsStateWithLifecycle()
     val selectedTheme by viewModel.selectedTheme.collectAsStateWithLifecycle()
+    val backupReminderEnabled by viewModel.backupReminderEnabled.collectAsStateWithLifecycle()
+    val backupReminderIntervalDays by viewModel.backupReminderIntervalDays.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showTimePicker by remember { mutableStateOf(false) }
+    var showIntervalDialog by remember { mutableStateOf(false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -124,6 +132,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
             Text(
@@ -215,6 +224,26 @@ fun SettingsScreen(
             TextButton(onClick = onBackup) {
                 Text("Backup & Restore")
             }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Backup reminder", modifier = Modifier.weight(1f))
+                Switch(
+                    checked = backupReminderEnabled,
+                    onCheckedChange = viewModel::setBackupReminderEnabled
+                )
+            }
+            if (backupReminderEnabled) {
+                Text(
+                    text = "Remind me if it's been more than $backupReminderIntervalDays days since my last backup",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                TextButton(onClick = { showIntervalDialog = true }) {
+                    Text("Change frequency")
+                }
+            }
         }
     }
 
@@ -240,6 +269,36 @@ fun SettingsScreen(
                 }
             },
             text = { TimePicker(state = timePickerState) }
+        )
+    }
+
+    if (showIntervalDialog) {
+        var daysText by remember { mutableStateOf(backupReminderIntervalDays.toString()) }
+        AlertDialog(
+            onDismissRequest = { showIntervalDialog = false },
+            title = { Text("Backup reminder frequency") },
+            text = {
+                OutlinedTextField(
+                    value = daysText,
+                    onValueChange = { newValue -> daysText = newValue.filter(Char::isDigit) },
+                    label = { Text("Days since last backup") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    daysText.toIntOrNull()?.let(viewModel::setBackupReminderIntervalDays)
+                    showIntervalDialog = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showIntervalDialog = false }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 }

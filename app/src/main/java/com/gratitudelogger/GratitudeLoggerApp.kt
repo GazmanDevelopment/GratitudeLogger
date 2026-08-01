@@ -3,6 +3,13 @@ package com.gratitudelogger
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.gratitudelogger.reminder.BackupCheckWorker
+import com.gratitudelogger.reminder.BackupReminderNotifier
 import com.gratitudelogger.reminder.ReminderNotifier
 import com.gratitudelogger.reminder.ReminderPreferences
 import com.gratitudelogger.reminder.ReminderScheduler
@@ -11,10 +18,11 @@ import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidApp
-class GratitudeLoggerApp : Application() {
+class GratitudeLoggerApp : Application(), Configuration.Provider {
 
     // Injected (not just referenced) so Hilt constructs it - and registers its
     // ProcessLifecycleOwner observer - during app startup rather than on first UI use.
@@ -27,6 +35,12 @@ class GratitudeLoggerApp : Application() {
     @Inject
     lateinit var reminderScheduler: ReminderScheduler
 
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder().setWorkerFactory(workerFactory).build()
+
     override fun onCreate() {
         super.onCreate()
         val channel = NotificationChannel(
@@ -34,7 +48,15 @@ class GratitudeLoggerApp : Application() {
             "Daily Gratitude Reminder",
             NotificationManager.IMPORTANCE_DEFAULT
         )
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        val backupChannel = NotificationChannel(
+            BackupReminderNotifier.CHANNEL_ID,
+            "Backup Reminder",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        getSystemService(NotificationManager::class.java).apply {
+            createNotificationChannel(channel)
+            createNotificationChannel(backupChannel)
+        }
 
         // The reminder defaults to enabled from first install (ReminderPreferences.enabled),
         // but a preference default alone doesn't schedule anything - this mirrors
@@ -47,5 +69,16 @@ class GratitudeLoggerApp : Application() {
                 reminderScheduler.scheduleNext(time.hour, time.minute)
             }
         }
+
+        // Runs unconditionally (KEEP makes repeat calls idempotent) - the worker itself checks
+        // BackupPreferences.reminderEnabled and no-ops if it's off, so toggling the Settings
+        // switch never needs to enqueue/cancel any work. Periodic, not exact-timed, so
+        // WorkManager (which persists this registration across reboots on its own) is a better
+        // fit here than the AlarmManager+BootReceiver pattern the daily reminder uses.
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "backup_reminder_check",
+            ExistingPeriodicWorkPolicy.KEEP,
+            PeriodicWorkRequestBuilder<BackupCheckWorker>(1, TimeUnit.DAYS).build()
+        )
     }
 }
