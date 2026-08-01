@@ -26,7 +26,9 @@ class ReminderPreferences @Inject constructor(
         val MINUTE = intPreferencesKey("reminder_minute")
     }
 
-    val enabled: Flow<Boolean> = context.reminderDataStore.data.map { it[Keys.ENABLED] ?: false }
+    // Defaults to true so the reminder is on from first install, not something the user has
+    // to discover and opt into in Settings.
+    val enabled: Flow<Boolean> = context.reminderDataStore.data.map { it[Keys.ENABLED] ?: true }
 
     val time: Flow<ReminderTime> = context.reminderDataStore.data.map {
         ReminderTime(

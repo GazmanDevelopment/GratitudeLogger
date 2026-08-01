@@ -45,7 +45,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     val reminderEnabled: StateFlow<Boolean> = reminderPreferences.enabled
-        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     val reminderTime: StateFlow<ReminderTime> = reminderPreferences.time
         .stateIn(
