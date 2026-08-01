@@ -53,6 +53,7 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gratitudelogger.theme.AppTheme
+import com.gratitudelogger.theme.EntryOrder
 import com.gratitudelogger.ui.theme.LocalHeaderColors
 import com.gratitudelogger.ui.theme.swatchColor
 
@@ -68,6 +69,7 @@ fun SettingsScreen(
     val reminderTime by viewModel.reminderTime.collectAsStateWithLifecycle()
     val biometricEnabled by viewModel.biometricEnabled.collectAsStateWithLifecycle()
     val selectedTheme by viewModel.selectedTheme.collectAsStateWithLifecycle()
+    val selectedEntryOrder by viewModel.selectedEntryOrder.collectAsStateWithLifecycle()
     val backupReminderEnabled by viewModel.backupReminderEnabled.collectAsStateWithLifecycle()
     val backupReminderIntervalDays by viewModel.backupReminderIntervalDays.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -158,6 +160,26 @@ fun SettingsScreen(
                             .background(theme.swatchColor(), CircleShape)
                     )
                     Text(theme.displayName)
+                }
+            }
+
+            Text(
+                "Entry order",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+            )
+            EntryOrder.entries.forEach { order ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.setEntryOrder(order) },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = order == selectedEntryOrder,
+                        onClick = { viewModel.setEntryOrder(order) }
+                    )
+                    Text(order.displayName)
                 }
             }
 
