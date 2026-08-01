@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -148,8 +149,10 @@ fun CalendarHomeScreen(
         // else: no feed rows exist for this month - just show it without moving the feed.
     }
 
-    val entryDatesInVisibleMonth = remember(visibleMonth, entriesByDate) {
-        entriesByDate.keys.filter { YearMonth.from(it) == visibleMonth }.toSet()
+    val entryCountsInVisibleMonth = remember(visibleMonth, entriesByDate) {
+        entriesByDate
+            .filterKeys { YearMonth.from(it) == visibleMonth }
+            .mapValues { (_, entries) -> entries.size }
     }
 
     var pendingDelete by remember { mutableStateOf<JournalEntry?>(null) }
@@ -194,7 +197,7 @@ fun CalendarHomeScreen(
             WeekdayHeader()
             MonthGrid(
                 visibleMonth = visibleMonth,
-                entryDates = entryDatesInVisibleMonth,
+                entryCounts = entryCountsInVisibleMonth,
                 today = today,
                 onDayClick = { date -> scrollToDate(date) }
             )
@@ -309,7 +312,7 @@ private fun daysGridFor(month: YearMonth): List<LocalDate?> {
 @Composable
 private fun MonthGrid(
     visibleMonth: YearMonth,
-    entryDates: Set<LocalDate>,
+    entryCounts: Map<LocalDate, Int>,
     today: LocalDate,
     onDayClick: (LocalDate) -> Unit
 ) {
@@ -320,7 +323,7 @@ private fun MonthGrid(
                 week.forEach { date ->
                     DayCell(
                         date = date,
-                        hasEntry = date != null && entryDates.contains(date),
+                        entryCount = date?.let { entryCounts[it] } ?: 0,
                         isToday = date != null && date == today,
                         onClick = { date?.let(onDayClick) },
                         modifier = Modifier.weight(1f)
@@ -331,10 +334,20 @@ private fun MonthGrid(
     }
 }
 
+private val EntryDotBaseSize = 6.dp
+
+/** 1 entry = the base dot; 2 = twice its size; 3+ = three times its size. */
+private fun entryDotSize(entryCount: Int): Dp? = when {
+    entryCount <= 0 -> null
+    entryCount == 1 -> EntryDotBaseSize
+    entryCount == 2 -> EntryDotBaseSize * 2
+    else -> EntryDotBaseSize * 3
+}
+
 @Composable
 private fun DayCell(
     date: LocalDate?,
-    hasEntry: Boolean,
+    entryCount: Int,
     isToday: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -356,10 +369,10 @@ private fun DayCell(
                         MaterialTheme.typography.bodyLarge
                     }
                 )
-                if (hasEntry) {
+                entryDotSize(entryCount)?.let { dotSize ->
                     Box(
                         modifier = Modifier
-                            .size(6.dp)
+                            .size(dotSize)
                             .background(MaterialTheme.colorScheme.tertiary, CircleShape)
                     )
                 }
