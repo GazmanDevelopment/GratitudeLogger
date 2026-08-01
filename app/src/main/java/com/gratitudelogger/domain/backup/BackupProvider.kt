@@ -11,7 +11,8 @@ data class LastBackupInfo(val accountLabel: String, val timestamp: Instant)
 
 enum class BackupProviderType(val displayName: String) {
     GOOGLE_DRIVE("Google Drive"),
-    DROPBOX("Dropbox")
+    DROPBOX("Dropbox"),
+    ONEDRIVE("OneDrive")
 }
 
 sealed interface BackupOutcome {

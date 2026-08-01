@@ -38,6 +38,11 @@ android {
             "DROPBOX_APP_KEY",
             "\"${localProperties.getProperty("DROPBOX_APP_KEY", "")}\""
         )
+        buildConfigField(
+            "String",
+            "ONEDRIVE_CLIENT_ID",
+            "\"${localProperties.getProperty("ONEDRIVE_CLIENT_ID", "")}\""
+        )
 
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")

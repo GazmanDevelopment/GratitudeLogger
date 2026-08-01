@@ -10,6 +10,7 @@ import com.gratitudelogger.data.backup.BackupPreferences
 import com.gratitudelogger.data.backup.DropboxBackupProvider
 import com.gratitudelogger.data.backup.GoogleDriveBackupProvider
 import com.gratitudelogger.data.backup.OAuthRedirectRelay
+import com.gratitudelogger.data.backup.OneDriveBackupProvider
 import com.gratitudelogger.domain.backup.BackupOutcome
 import com.gratitudelogger.domain.backup.BackupProvider
 import com.gratitudelogger.domain.backup.BackupProviderType
@@ -35,6 +36,7 @@ data class BackupUiState(
 class BackupViewModel @Inject constructor(
     private val googleDriveBackupProvider: GoogleDriveBackupProvider,
     private val dropboxBackupProvider: DropboxBackupProvider,
+    private val oneDriveBackupProvider: OneDriveBackupProvider,
     private val backupPreferences: BackupPreferences,
     oauthRedirectRelay: OAuthRedirectRelay
 ) : ViewModel() {
@@ -70,6 +72,7 @@ class BackupViewModel @Inject constructor(
     private fun providerFor(type: BackupProviderType): BackupProvider = when (type) {
         BackupProviderType.GOOGLE_DRIVE -> googleDriveBackupProvider
         BackupProviderType.DROPBOX -> dropboxBackupProvider
+        BackupProviderType.ONEDRIVE -> oneDriveBackupProvider
     }
 
     fun backupNow(activity: Activity) {

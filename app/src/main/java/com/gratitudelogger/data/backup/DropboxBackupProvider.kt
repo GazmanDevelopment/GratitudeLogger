@@ -26,10 +26,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
-import java.security.MessageDigest
-import java.security.SecureRandom
 import java.time.Instant
-import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -120,8 +117,8 @@ class DropboxBackupProvider @Inject constructor(
     }
 
     private fun buildAuthIntent(): Intent {
-        val verifier = generateCodeVerifier().also { pendingCodeVerifier = it }
-        val challenge = codeChallengeFor(verifier)
+        val verifier = Pkce.generateCodeVerifier().also { pendingCodeVerifier = it }
+        val challenge = Pkce.codeChallengeFor(verifier)
         val url = DROPBOX_AUTHORIZE_URL.toHttpUrl().newBuilder()
             .addQueryParameter("client_id", BuildConfig.DROPBOX_APP_KEY)
             .addQueryParameter("response_type", "code")
@@ -134,17 +131,6 @@ class DropboxBackupProvider @Inject constructor(
         return CustomTabsIntent.Builder().build().intent.apply {
             data = url.toString().toUri()
         }
-    }
-
-    private fun generateCodeVerifier(): String {
-        val bytes = ByteArray(32)
-        SecureRandom().nextBytes(bytes)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)
-    }
-
-    private fun codeChallengeFor(verifier: String): String {
-        val digest = MessageDigest.getInstance("SHA-256").digest(verifier.toByteArray(Charsets.US_ASCII))
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
     }
 
     private suspend fun exchangeCodeForToken(code: String, verifier: String): DropboxTokenResponse =
