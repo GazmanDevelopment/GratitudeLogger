@@ -1,8 +1,8 @@
 # Gratitude Journal
 
 A private, local-first Android app for recording daily gratitude entries,
-with optional manual backup to Google Drive. Built with Kotlin and Jetpack
-Compose.
+with optional manual backup to Google Drive or Dropbox. Built with Kotlin
+and Jetpack Compose.
 
 See [SPECS.md](SPECS.md) for the original feature spec this app was built
 against.
@@ -21,10 +21,11 @@ against.
 - **Selectable themes** — three built-in color schemes (Sunset Gold, Golden
   Hour, Terra Cotta), independent of system light/dark mode.
 - **Backup & restore** — manual "Back up now" / "Restore latest" against
-  Google Drive's hidden `appDataFolder`, so backups never clutter or appear
-  in the user's normal Drive. Built behind a provider-agnostic interface so
-  OneDrive/Dropbox can be added later. See [STORAGE.md](STORAGE.md) for setup
-  and design details.
+  either Google Drive's hidden `appDataFolder` or a Dropbox app folder (a
+  picker in the Backup & Restore screen selects which), so backups never
+  clutter or appear in the user's normal Drive/Dropbox. Built behind a
+  provider-agnostic interface. See [STORAGE.md](STORAGE.md) /
+  [STORAGE_DROPBOX.md](STORAGE_DROPBOX.md) for setup and design details.
 
 All data (database + photos) lives entirely on-device unless the user
 explicitly triggers a backup.
@@ -39,7 +40,8 @@ explicitly triggers a backup.
 - **WorkManager** for scheduled reminders
 - **AndroidX Biometric** for fingerprint/face unlock
 - **Google Identity Services** (`play-services-auth`) + **OkHttp** for the
-  Google Drive REST integration
+  Google Drive REST integration; OAuth2 PKCE via **AndroidX Browser**
+  (Custom Tabs) + OkHttp for Dropbox
 
 Minimum SDK 26, target/compile SDK 37.
 
@@ -48,18 +50,18 @@ Minimum SDK 26, target/compile SDK 37.
 ```
 app/src/main/java/com/gratitudelogger/
 ├── data/            # Room DAOs/entities, DataStore preference stores, backup archiving
-│   └── backup/      # BackupArchiver, BackupPreferences, GoogleDriveBackupProvider
+│   └── backup/      # BackupArchiver, BackupPreferences, GoogleDriveBackupProvider,
+│                     # DropboxBackupProvider, OAuthRedirectRelay
 ├── domain/          # Repository interfaces, backup provider abstraction
 │   └── backup/      # BackupProvider (provider-agnostic interface)
 ├── di/              # Hilt modules
-├── reminder/        # WorkManager-based daily reminder scheduling
+├── reminder/        # WorkManager-based daily/backup reminder scheduling
 ├── security/        # PIN + biometric gating
-├── theme/           # Color scheme definitions
+├── theme/           # Color scheme + entry-order preference definitions
 └── ui/              # Compose screens, ViewModels, navigation
     ├── auth/        # PIN entry/setup, unlock
-    ├── backup/      # Backup & Restore screen
-    ├── calendar/    # Monthly calendar home screen
-    ├── dayentries/  # Per-day entry list
+    ├── backup/      # Backup & Restore screen (provider picker, backup/restore)
+    ├── calendar/    # Calendar + scrollable entries feed (the home screen)
     ├── entry/       # Add/edit entry screen (text + photo)
     ├── navigation/  # NavGraph, type-safe routes
     ├── settings/    # Settings screen
@@ -75,19 +77,20 @@ by Android Studio, or set it in `local.properties`).
 ./gradlew assembleDebug
 ```
 
-### Optional: Google Drive backup
+### Optional: cloud backup (Google Drive and/or Dropbox)
 
-The backup feature needs one developer-side secret,
-`GOOGLE_WEB_CLIENT_ID`, added to your own `local.properties` (never
-committed — see `.gitignore`):
+Each backup provider needs one developer-side secret added to your own
+`local.properties` (never committed — see `.gitignore`):
 
 ```
 GOOGLE_WEB_CLIENT_ID=xxxxxxxxxx.apps.googleusercontent.com
+DROPBOX_APP_KEY=xxxxxxxxxxxxxxx
 ```
 
-Without it, the app still builds and runs fine — the backup screen will
-just fail to authorize. Full one-time Google Cloud Console setup
-instructions are in [STORAGE.md](STORAGE.md).
+Without either, the app still builds and runs fine — that provider's entry
+in the Backup & Restore picker will just fail to authorize until its key is
+set. Full one-time setup instructions: [STORAGE.md](STORAGE.md) (Google
+Drive), [STORAGE_DROPBOX.md](STORAGE_DROPBOX.md) (Dropbox).
 
 ## Status
 

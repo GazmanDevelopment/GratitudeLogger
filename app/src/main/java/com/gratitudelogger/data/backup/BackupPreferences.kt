@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
+import com.gratitudelogger.domain.backup.BackupProviderType
 import com.gratitudelogger.domain.backup.LastBackupInfo
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -27,6 +28,8 @@ class BackupPreferences @Inject constructor(
         val LAST_BACKUP_MILLIS = longPreferencesKey("last_backup_millis")
         val REMINDER_ENABLED = booleanPreferencesKey("backup_reminder_enabled")
         val REMINDER_INTERVAL_DAYS = intPreferencesKey("backup_reminder_interval_days")
+        val DROPBOX_REFRESH_TOKEN = stringPreferencesKey("dropbox_refresh_token")
+        val SELECTED_PROVIDER = stringPreferencesKey("selected_backup_provider")
     }
 
     val lastBackupInfo: Flow<LastBackupInfo?> = context.backupDataStore.data.map { prefs ->
@@ -45,9 +48,22 @@ class BackupPreferences @Inject constructor(
     val reminderIntervalDays: Flow<Int> =
         context.backupDataStore.data.map { it[Keys.REMINDER_INTERVAL_DAYS] ?: DEFAULT_REMINDER_INTERVAL_DAYS }
 
+    val dropboxRefreshToken: Flow<String?> =
+        context.backupDataStore.data.map { it[Keys.DROPBOX_REFRESH_TOKEN] }
+
+    val selectedProvider: Flow<BackupProviderType> = context.backupDataStore.data.map { prefs ->
+        prefs[Keys.SELECTED_PROVIDER]?.let { name ->
+            BackupProviderType.entries.find { it.name == name }
+        } ?: BackupProviderType.GOOGLE_DRIVE
+    }
+
     suspend fun currentReminderEnabled(): Boolean = reminderEnabled.first()
 
     suspend fun currentReminderIntervalDays(): Int = reminderIntervalDays.first()
+
+    suspend fun currentDropboxRefreshToken(): String? = dropboxRefreshToken.first()
+
+    suspend fun currentSelectedProvider(): BackupProviderType = selectedProvider.first()
 
     suspend fun recordBackup(accountLabel: String, timestamp: Instant) {
         context.backupDataStore.edit { prefs ->
@@ -62,6 +78,16 @@ class BackupPreferences @Inject constructor(
 
     suspend fun setReminderIntervalDays(days: Int) {
         context.backupDataStore.edit { it[Keys.REMINDER_INTERVAL_DAYS] = days }
+    }
+
+    suspend fun setDropboxRefreshToken(token: String?) {
+        context.backupDataStore.edit { prefs ->
+            if (token != null) prefs[Keys.DROPBOX_REFRESH_TOKEN] = token else prefs.remove(Keys.DROPBOX_REFRESH_TOKEN)
+        }
+    }
+
+    suspend fun setSelectedProvider(provider: BackupProviderType) {
+        context.backupDataStore.edit { it[Keys.SELECTED_PROVIDER] = provider.name }
     }
 
     companion object {
