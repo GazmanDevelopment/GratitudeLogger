@@ -33,3 +33,6 @@ google-services.json
 # Android Profiling
 *.hprof
 Colour Schemes.css
+
+# Internal build-agent implementation notes, not for public/GitHub docs
+STORAGE_OD_BUILD.md

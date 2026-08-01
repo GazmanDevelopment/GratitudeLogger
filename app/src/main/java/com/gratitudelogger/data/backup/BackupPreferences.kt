@@ -29,6 +29,7 @@ class BackupPreferences @Inject constructor(
         val REMINDER_ENABLED = booleanPreferencesKey("backup_reminder_enabled")
         val REMINDER_INTERVAL_DAYS = intPreferencesKey("backup_reminder_interval_days")
         val DROPBOX_REFRESH_TOKEN = stringPreferencesKey("dropbox_refresh_token")
+        val ONEDRIVE_REFRESH_TOKEN = stringPreferencesKey("onedrive_refresh_token")
         val SELECTED_PROVIDER = stringPreferencesKey("selected_backup_provider")
     }
 
@@ -51,6 +52,9 @@ class BackupPreferences @Inject constructor(
     val dropboxRefreshToken: Flow<String?> =
         context.backupDataStore.data.map { it[Keys.DROPBOX_REFRESH_TOKEN] }
 
+    val oneDriveRefreshToken: Flow<String?> =
+        context.backupDataStore.data.map { it[Keys.ONEDRIVE_REFRESH_TOKEN] }
+
     val selectedProvider: Flow<BackupProviderType> = context.backupDataStore.data.map { prefs ->
         prefs[Keys.SELECTED_PROVIDER]?.let { name ->
             BackupProviderType.entries.find { it.name == name }
@@ -62,6 +66,8 @@ class BackupPreferences @Inject constructor(
     suspend fun currentReminderIntervalDays(): Int = reminderIntervalDays.first()
 
     suspend fun currentDropboxRefreshToken(): String? = dropboxRefreshToken.first()
+
+    suspend fun currentOneDriveRefreshToken(): String? = oneDriveRefreshToken.first()
 
     suspend fun currentSelectedProvider(): BackupProviderType = selectedProvider.first()
 
@@ -83,6 +89,12 @@ class BackupPreferences @Inject constructor(
     suspend fun setDropboxRefreshToken(token: String?) {
         context.backupDataStore.edit { prefs ->
             if (token != null) prefs[Keys.DROPBOX_REFRESH_TOKEN] = token else prefs.remove(Keys.DROPBOX_REFRESH_TOKEN)
+        }
+    }
+
+    suspend fun setOneDriveRefreshToken(token: String?) {
+        context.backupDataStore.edit { prefs ->
+            if (token != null) prefs[Keys.ONEDRIVE_REFRESH_TOKEN] = token else prefs.remove(Keys.ONEDRIVE_REFRESH_TOKEN)
         }
     }
 
