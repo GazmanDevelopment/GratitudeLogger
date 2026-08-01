@@ -2,12 +2,9 @@ package com.gratitudelogger.domain
 
 import com.gratitudelogger.data.JournalEntry
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
-import java.time.YearMonth
 
 interface JournalRepository {
-    fun entriesForDate(date: LocalDate): Flow<List<JournalEntry>>
-    fun entryDatesInMonth(month: YearMonth): Flow<List<LocalDate>>
+    fun allEntries(): Flow<List<JournalEntry>>
     fun entryById(id: Long): Flow<JournalEntry?>
     suspend fun addEntry(text: String, photoPath: String? = null): JournalEntry
     suspend fun updateEntry(entry: JournalEntry)

@@ -5,7 +5,6 @@ import com.gratitudelogger.domain.PhotoStorage
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 import java.time.LocalDate
-import java.time.YearMonth
 import javax.inject.Inject
 
 class JournalRepositoryImpl @Inject constructor(
@@ -13,11 +12,7 @@ class JournalRepositoryImpl @Inject constructor(
     private val photoStorage: PhotoStorage
 ) : JournalRepository {
 
-    override fun entriesForDate(date: LocalDate): Flow<List<JournalEntry>> =
-        dao.getEntriesForDate(date)
-
-    override fun entryDatesInMonth(month: YearMonth): Flow<List<LocalDate>> =
-        dao.getEntryDatesInRange(month.atDay(1), month.atEndOfMonth())
+    override fun allEntries(): Flow<List<JournalEntry>> = dao.getAllEntries()
 
     override fun entryById(id: Long): Flow<JournalEntry?> =
         dao.getEntryById(id)
