@@ -58,6 +58,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.gratitudelogger.data.JournalEntry
+import com.gratitudelogger.theme.EntryOrder
 import com.gratitudelogger.ui.theme.LocalHeaderColors
 import kotlinx.coroutines.launch
 import java.io.File
@@ -85,19 +86,42 @@ fun CalendarHomeScreen(
     val today = viewModel.today
     val earliestDate by viewModel.earliestDate.collectAsStateWithLifecycle()
     val entriesByDate by viewModel.entriesByDate.collectAsStateWithLifecycle()
+    val entryOrder by viewModel.entryOrder.collectAsStateWithLifecycle()
 
     val dayCount = remember(earliestDate, today) {
         ChronoUnit.DAYS.between(earliestDate, today).toInt() + 1
     }
-    fun dateForIndex(index: Int): LocalDate = today.minusDays(index.toLong())
+    // Index 0 is whichever end of the range the current sort order puts first - today for
+    // Newest First, the earliest entry for Oldest First - so the rest of the screen (tap-to-
+    // scroll, month-grid sync) never needs to know which order is active, just this mapping.
+    fun dateForIndex(index: Int): LocalDate = when (entryOrder) {
+        EntryOrder.NEWEST_FIRST -> today.minusDays(index.toLong())
+        EntryOrder.OLDEST_FIRST -> earliestDate.plusDays(index.toLong())
+    }
+    fun indexForDate(date: LocalDate): Int {
+        val index = when (entryOrder) {
+            EntryOrder.NEWEST_FIRST -> ChronoUnit.DAYS.between(date, today)
+            EntryOrder.OLDEST_FIRST -> ChronoUnit.DAYS.between(earliestDate, date)
+        }
+        return index.toInt().coerceIn(0, dayCount - 1)
+    }
 
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     fun scrollToDate(date: LocalDate) {
         // The feed has no rows before earliestDate - nothing to scroll to there.
         if (date.isBefore(earliestDate) || date.isAfter(today)) return
-        val index = ChronoUnit.DAYS.between(date, today).toInt().coerceIn(0, dayCount - 1)
-        scope.launch { listState.animateScrollToItem(index) }
+        scope.launch { listState.animateScrollToItem(indexForDate(date)) }
+    }
+
+    // Whenever the sort order itself changes (a Settings action, not ordinary scrolling), the
+    // existing scroll index suddenly maps to a completely different date - snap back to today
+    // immediately (no animation) rather than leaving the feed pointing at a jarring, unrelated
+    // day. For Newest First this is a no-op (today is already index 0); for Oldest First it
+    // jumps to the last index. This also covers the very first composition, once the real
+    // persisted order value replaces the initial placeholder.
+    LaunchedEffect(entryOrder) {
+        listState.scrollToItem(indexForDate(today))
     }
 
     // The displayed month is explicit state, not purely derived from scroll: months before
@@ -105,9 +129,11 @@ fun CalendarHomeScreen(
     // there has to set the displayed month directly. The feed-scroll effect below still keeps
     // it in sync whenever the user drags the feed themselves (or a programmatic scroll lands
     // it on a different month than what was just set) - both paths write the same state, so
-    // they can't fight, only agree.
+    // they can't fight, only agree. Keyed on entryOrder/earliestDate too, not just listState,
+    // since dateForIndex's mapping depends on both and a long-lived collector would otherwise
+    // keep using a stale mapping after either changes.
     var visibleMonth by remember { mutableStateOf(YearMonth.from(today)) }
-    LaunchedEffect(listState) {
+    LaunchedEffect(listState, entryOrder, earliestDate) {
         snapshotFlow { listState.firstVisibleItemIndex }
             .collect { index -> visibleMonth = YearMonth.from(dateForIndex(index)) }
     }

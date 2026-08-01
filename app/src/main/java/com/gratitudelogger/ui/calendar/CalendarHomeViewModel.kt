@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.gratitudelogger.data.JournalEntry
 import com.gratitudelogger.domain.JournalRepository
 import com.gratitudelogger.domain.PhotoStorage
+import com.gratitudelogger.theme.EntryOrder
+import com.gratitudelogger.theme.ThemePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CalendarHomeViewModel @Inject constructor(
     private val repository: JournalRepository,
-    private val photoStorage: PhotoStorage
+    private val photoStorage: PhotoStorage,
+    themePreferences: ThemePreferences
 ) : ViewModel() {
 
     // Fixed for the ViewModel's lifetime - matches this codebase's existing precedent of not
@@ -35,6 +38,9 @@ class CalendarHomeViewModel @Inject constructor(
     val entriesByDate: StateFlow<Map<LocalDate, List<JournalEntry>>> = allEntries
         .map { list -> list.groupBy { it.entryDate } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
+    val entryOrder: StateFlow<EntryOrder> = themePreferences.selectedEntryOrder
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), EntryOrder.NEWEST_FIRST)
 
     fun deleteEntry(entry: JournalEntry) {
         viewModelScope.launch { repository.deleteEntry(entry) }

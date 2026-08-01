@@ -10,6 +10,7 @@ import com.gratitudelogger.reminder.ReminderScheduler
 import com.gratitudelogger.reminder.ReminderTime
 import com.gratitudelogger.security.SecurityPreferences
 import com.gratitudelogger.theme.AppTheme
+import com.gratitudelogger.theme.EntryOrder
 import com.gratitudelogger.theme.ThemePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -62,6 +63,9 @@ class SettingsViewModel @Inject constructor(
     val selectedTheme: StateFlow<AppTheme> = themePreferences.selectedTheme
         .stateIn(viewModelScope, SharingStarted.Eagerly, AppTheme.SUNSET_GOLD)
 
+    val selectedEntryOrder: StateFlow<EntryOrder> = themePreferences.selectedEntryOrder
+        .stateIn(viewModelScope, SharingStarted.Eagerly, EntryOrder.NEWEST_FIRST)
+
     val backupReminderEnabled: StateFlow<Boolean> = backupPreferences.reminderEnabled
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
@@ -70,6 +74,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setTheme(theme: AppTheme) {
         viewModelScope.launch { themePreferences.setTheme(theme) }
+    }
+
+    fun setEntryOrder(order: EntryOrder) {
+        viewModelScope.launch { themePreferences.setEntryOrder(order) }
     }
 
     fun canScheduleExactAlarms(): Boolean = reminderScheduler.canScheduleExactAlarms()
