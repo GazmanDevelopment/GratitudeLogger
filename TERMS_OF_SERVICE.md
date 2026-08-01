@@ -1,6 +1,6 @@
 # Terms of Service for Gratitude Logger
 
-**Last updated:** 2026-0-01
+**Last updated:** 2026-08-01
 
 Gratitude Logger is a free personal gratitude journal app. These terms are
 short on purpose, because there isn't much to govern: there's no payment,
